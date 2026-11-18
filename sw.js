@@ -1,6 +1,6 @@
-const V = 'skat-2.9';
+const V = 'skat-3.4';
 const APP = 'skat-app-' + V, LIB = 'skat-lib', TILES = 'skat-tiles';
-const SHELL = ['./', './index.html'];
+const SHELL = ['./', './index.html', './vi.js', './op.js', './tp.js', './mk.js', './sh.js', './or.js', './ed.js', './manifest.json', './icon-192.png', './icon-512.png'];
 const LIBS = ['https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css',
 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js',
 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js',
@@ -31,7 +31,11 @@ const c = await caches.open(TILES), keys = await c.keys();
 if (keys.length > MAX_TILES) for (const k of keys.slice(0, keys.length - MAX_TILES + 1000)) await c.delete(k);
 }
 async function cacheFirst(req, name){
-const c = await caches.open(name), hit = await c.match(req);
+const c = await caches.open(name);
+let hit = await c.match(req);
+// modLoad() uses ?v=<app-version>, but install pre-caches module files without a query string.
+// Fall back to that copy when opening an offline module for the very first time.
+if (!hit && name === APP){const u=new URL(req.url);if(u.origin===self.location.origin && u.search)hit=await c.match(u.origin+u.pathname);}
 if (hit && !(req.mode === 'cors' && hit.type === 'opaque')) return hit;
 try {
 const res = await fetch(req);

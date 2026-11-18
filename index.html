@@ -931,7 +931,7 @@ body.frame #fbarX{top:calc(var(--ft) + 8px)}#fbarX.on{display:flex}#fbarX span{c
 <script src="https://cdn.jsdelivr.net/npm/leaflet-rotate@0.2.8/dist/leaflet-rotate-src.js"></script>
 
 <script id="skatMain" type="text/plain">
-const VERSION = 'версия 6.65';
+const VERSION = 'версия 6.70';
 const hist = {stack:[], i:-1, mute:false};
 const NATIVE = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
 let framed = false; try { framed = window.self !== window.top; } catch(e){ framed = true; }
@@ -3844,7 +3844,7 @@ function topoScale(){ try { const c = map.getCenter(), mpp = 156543.03392 * Math
 window.addEventListener('error', e => { try { toast('Ошибка: ' + (e.message || e) + ' (' + String(e.filename || '').split('/').pop().split('?')[0] + ':' + (e.lineno || '') + ')'); } catch(x){} });
 window.addEventListener('unhandledrejection', e => { const r = e.reason; if (r && /^(mk|op|tp)$/.test(r.message)) return; try { toast('Ошибка: ' + ((r && r.message) || r)); } catch(x){} });
 // ======== МОДУЛИ: ЛЕНИВАЯ ЗАГРУЗКА (mk.js — Макет/3D, op.js — Оператор, tp.js — Боевой контур) ========
-const MODV = VERSION.replace(/^\D+/, ''), MODN = {mk:'«Макет»', op:'«Оператор»', tp:'«Боевой контур»', sh:'«Штаб»', or:'«Ориентирование»', ed:'«Редактор»'}, modP = {};
+const MODV = VERSION.replace(/^\D+/, ''), MODN = {mk:'«Макет»', op:'«Оператор»', tp:'«Боевой контур»', sh:'«Штаб»', or:'«Ориентирование»', ed:'«Редактор»', vi:'«Vision»'}, modP = {};
 function modLoad(m){ if (window['__mod_' + m]) return Promise.resolve(); if (modP[m]) return modP[m];
 modP[m] = new Promise((res, rej) => { const sc = document.createElement('script'); sc.src = m + '.js?v=' + MODV; sc.onload = () => window['__mod_' + m] ? res() : rej(new Error(m));
 sc.onerror = () => { modP[m] = null; sc.remove(); toast(`Модуль ${MODN[m]} не загрузился — проверьте файл ${m}.js или интернет`); rej(new Error(m)); }; document.head.appendChild(sc); });
@@ -4468,6 +4468,12 @@ function edEnter(){ $('launch').classList.remove('on'); modLoad('ed').then(() =>
 async function edCryptAll(on){ try { if (!window.__mod_ed && !lsGet('skat_edany', 0)) return; await modLoad('ed'); await window.edCrypt(on); } catch(e){ console.warn('ed crypt', e); } }
 $('edBtn').onclick = () => modLoad('ed').then(() => window.edPanel()).catch(() => {});
 if (lsGet('skat_edm', 0)) setTimeout(() => modLoad('ed').then(() => window.edStart(true)).catch(() => {}), 900);
+// ---- 6.66: SKAT Vision — отдельная игровая оцифровка в условной сетке
+{ const b = document.createElement('button'); b.className = 'rb'; b.id = 'viBtn'; b.title = 'Vision: распознавание графических знаков на изображениях';
+  b.innerHTML = '<svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 15l5-5 5 5 3-3 5 5M8 6h.01"/></svg>Vision';
+  b.onclick = () => modLoad('vi').then(() => window.viOpen && viOpen()).catch(e => { console.warn('vision', e); toast('Не удалось загрузить vi.js'); });
+  const R = RBG.find(r => r.o.id === 'rMore'); if (R) R.f.appendChild(b); else $('rail').appendChild(b);
+}
 // ---- удержание пальца
 { const mc = map.getContainer(); let lp = null;
 const clearLP = () => { if (lp){ clearTimeout(lp.tm); lp = null; } };
